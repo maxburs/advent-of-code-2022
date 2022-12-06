@@ -1,5 +1,5 @@
 #!/bin/bash
 
-mkdir $1
-cd $1
-cargo init . "advent-of-code-2022-$1"
+mkdir "$1_$2"
+cd "$1_$2"
+cargo init . --name "advent-of-code-2022-$1-$2"
