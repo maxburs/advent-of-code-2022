@@ -93,40 +93,36 @@ fn build_filesystem(input: &str) -> FileSystem {
     for line in input.lines() {
         let line: Vec<&str> = line.split_whitespace().collect();
 
-        if line[0] == "$" {
-            match line[1] {
-                "cd" => match line[2] {
-                    ".." => {
-                        position = file_system.parent(position);
-                    }
-                    "/" => position = 0,
-                    target_name => {
-                        let dir: &Directory = file_system.get_dir(position);
-                        position = *dir
-                            .content
-                            .iter()
-                            .find(|item_id| {
-                                if let Item::Directory(Directory { name, .. }) =
-                                    &file_system.items[**item_id]
-                                {
-                                    name == target_name
-                                } else {
-                                    false
-                                }
-                            })
-                            .unwrap_or_else(|| {
-                                panic!("Unable to find directory {} in {}", dir.name, target_name)
-                            })
-                    }
-                },
-                "ls" => (),
-                _ => panic!("unexpected command: {}", line[1]),
+        match line.as_slice() {
+            ["$", "cd", ".."] => position = file_system.parent(position),
+            ["$", "cd", "/"] => position = 0,
+            ["$", "cd", target_name] => {
+                let dir: &Directory = file_system.get_dir(position);
+                position = *dir
+                    .content
+                    .iter()
+                    .find(|item_id| {
+                        if let Item::Directory(Directory { name, .. }) =
+                            &file_system.items[**item_id]
+                        {
+                            name == target_name
+                        } else {
+                            false
+                        }
+                    })
+                    .unwrap_or_else(|| {
+                        panic!("Unable to find directory {} in {}", dir.name, target_name)
+                    })
             }
-        } else if line[0] == "dir" {
-            file_system.add_dir(position, line[1].to_string());
-        } else {
-            let size: usize = line[0].parse().unwrap();
-            file_system.add_file(position, line[1].to_string(), size);
+            ["$", "ls"] => (),
+            ["dir", name] => {
+                file_system.add_dir(position, name.to_string());
+            }
+            [size, name] => {
+                let size: usize = size.parse().unwrap();
+                file_system.add_file(position, name.to_string(), size);
+            }
+            line => panic!("Unexpected line: {:?}", line),
         }
     }
 
@@ -178,7 +174,9 @@ fn run(input: &str) -> usize {
 
     let target_space_used = 70000000 - 30000000;
 
-    total_sizes(&file_system, 0, total_size - target_space_used).1.unwrap()
+    total_sizes(&file_system, 0, total_size - target_space_used)
+        .1
+        .unwrap()
 }
 
 #[test]
