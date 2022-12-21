@@ -4,7 +4,7 @@ fn start_of_packet_distance(input: &str) -> usize {
 
 #[test]
 fn example() {
-    assert_eq!(include_str!("../example.txt")), 19);
+    assert_eq!(start_of_packet_distance(include_str!("../example.txt")), 19);
 }
 
 fn main() {
