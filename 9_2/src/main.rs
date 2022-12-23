@@ -11,22 +11,26 @@ impl Knot {
         Knot { x: 0, y: 0 }
     }
     fn follow(&mut self, head: &Knot) {
-        let x_diff = self.x - head.x;
-        if x_diff < 0 {
-            self.x -= 1
-        } else if x_diff > 0 {
-            self.x += 1
-        }
+        let x_diff = head.x - self.x;
+        let y_diff = head.y - self.y;
 
-        let y_diff = self.y - head.y;
-        if y_diff < 0 {
-            self.y -= 1
-        } else if y_diff > 0 {
-            self.y += 1
+        if x_diff.abs() == 2 || y_diff.abs() == 2 {
+            if x_diff < 0 {
+                self.x -= 1
+            } else if x_diff > 0 {
+                self.x += 1
+            }
+    
+            if y_diff < 0 {
+                self.y -= 1
+            } else if y_diff > 0 {
+                self.y += 1
+            }
         }
     }
 }
 
+#[derive(Debug)]
 struct Board {
     head: Knot,
     tail: Vec<Knot>,
@@ -40,9 +44,8 @@ struct PrintSize {
 }
 
 impl Board {
-    fn print(&self, _visited: &HashSet<(i32, i32)>, print_size: &Option<PrintSize>) {
+    fn print(&self, print_size: &Option<PrintSize>) {
         if let Some(print_size) = print_size {
-            println!();
             for y in (print_size.y_start..print_size.y_end).rev() {
                 for x in print_size.x_start..print_size.x_end {
                     let mut letter: Option<String> = None;
@@ -89,7 +92,7 @@ fn positions_visited(input: &str, print_size: Option<PrintSize>) -> usize {
     let mut visited = HashSet::<(i32, i32)>::new();
     let mut board = Board {
         head: Knot::new(),
-        tail: (0..8).map(|_| Knot::new()).collect(),
+        tail: (0..9).map(|_| Knot::new()).collect(),
     };
 
     if print_size.is_some() {
@@ -97,7 +100,7 @@ fn positions_visited(input: &str, print_size: Option<PrintSize>) -> usize {
         println!("== Initial State ==");
         println!();
     }
-    board.print(&visited, &print_size);
+    board.print(&print_size);
 
     for line in input.lines() {
         let mut line = line.split(" ");
@@ -112,66 +115,25 @@ fn positions_visited(input: &str, print_size: Option<PrintSize>) -> usize {
 
         for _ in 0..amount {
             match direction {
-                "R" => {
-                    board.head.x += 1;
-                    let mut prev_x = board.head.x;
-                    let mut prev_y = board.head.y;
-                    for tail in board.tail.iter_mut() {
-                        if prev_x == tail.x + 2 {
-                            tail.x += 1;
-                            tail.y = prev_y;
-                        }
-                        prev_x = tail.x;
-                        prev_y = tail.y;
-                    }
-                }
-                "L" => {
-                    board.head.x -= 1;
-                    let mut prev_x = board.head.x;
-                    let mut prev_y = board.head.y;
-                    for tail in board.tail.iter_mut() {
-                        if prev_x == tail.x - 2 {
-                            tail.x -= 1;
-                            tail.y = prev_y;
-                        }
-                        prev_x = tail.x;
-                        prev_y = tail.y;
-                    }
-                }
-                "U" => {
-                    board.head.y += 1;
-                    let mut prev_x = board.head.x;
-                    let mut prev_y = board.head.y;
-                    for tail in board.tail.iter_mut() {
-                        if prev_y == tail.y + 2 {
-                            dbg!(prev_x, prev_y, &tail);
-                            tail.y += 1;
-                            tail.x = prev_x;
-                        }
-                        prev_x = tail.x;
-                        prev_y = tail.y;
-                    }
-                    board.print(&visited, &print_size);
-                }
-                "D" => {
-                    board.head.y -= 1;
-                    let mut prev_x = board.head.x;
-                    let mut prev_y = board.head.y;
-                    for tail in board.tail.iter_mut() {
-                        if prev_y == tail.y - 2 {
-                            tail.y -= 1;
-                            tail.x = prev_x;
-                        }
-                        prev_x = tail.x;
-                        prev_y = tail.y;
-                    }
-                }
+                "R" => board.head.x += 1,
+                "L" =>  board.head.x -= 1,
+                "U" => board.head.y += 1,
+                "D" => board.head.y -= 1,
                 _ => panic!(),
             };
+
+            let mut prev = &mut board.head;
+
+            for knot in board.tail.iter_mut() {
+                knot.follow(prev);
+                prev = knot;
+            }
+
             let tail = board.tail.last().unwrap();
             visited.insert((tail.x, tail.y));
-
         }
+        board.print( &print_size);
+        // dbg!(&board);
     }
     print_visited(&print_size, &visited);
 
