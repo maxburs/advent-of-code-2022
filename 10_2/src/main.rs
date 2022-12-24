@@ -1,20 +1,36 @@
+#[derive(Debug)]
 struct State {
     cycle: isize,
-    total_strength: isize,
     x: isize,
+    image: String,
 }
 
 impl State {
     fn step(&mut self) {
         self.cycle += 1;
-        if (self.cycle + 20) % 40 == 0 {
-            self.total_strength += self.x * self.cycle;
+        let position = (self.cycle - 1) % 40;
+        let pixel = if position == self.x || position == self.x + 1 || position == self.x - 1 {
+            '#'
+        } else {
+            '.'
+        };
+        self.image.push(pixel);
+        if self.cycle % 40 == 0 {
+            self.image.push('\n');
         }
+        dbg!(self.cycle);
+        dbg!(self.x);
+        println!("{}", &self.image);
+        println!();
     }
 }
 
 fn run_program(input: &str) -> State {
-    let mut state = State { cycle: 0, total_strength: 0, x: 1 };
+    let mut state = State {
+        cycle: 0,
+        x: 1,
+        image: String::new(),
+    };
 
     for line in input.lines() {
         let line: Vec<&str> = line.split(" ").collect();
@@ -22,13 +38,13 @@ fn run_program(input: &str) -> State {
         match line.as_slice() {
             ["noop"] => {
                 state.step();
-            },
+            }
             ["addx", amount] => {
                 let amount: isize = amount.parse().unwrap();
                 state.step();
                 state.step();
                 state.x += amount;
-            },
+            }
             _ => panic!(),
         }
     }
@@ -38,10 +54,19 @@ fn run_program(input: &str) -> State {
 
 #[test]
 fn example() {
-    assert_eq!(run_program(include_str!("../example.txt")), 19);
+    assert_eq!(
+        run_program(include_str!("../example.txt")).image,
+        "##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######.....
+"
+    );
 }
 
 fn main() {
-    let result = run_program(include_str!("../input.txt"));
+    let result = run_program(include_str!("../input.txt")).image;
     println!("result: {result}");
 }
