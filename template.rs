@@ -1,13 +1,13 @@
-fn start_of_packet_distance(input: &str) -> usize {
+fn solve(input: &str) -> usize {
     unimplemented!()
 }
 
 #[test]
 fn example() {
-    assert_eq!(start_of_packet_distance(include_str!("../example.txt")), 19);
+    assert_eq!(solve(include_str!("../example.txt")), 19);
 }
 
 fn main() {
-    let result = start_of_packet_distance(include_str!("../input.txt"));
+    let result = solve(include_str!("../input.txt"));
     println!("result: {result}");
 }
